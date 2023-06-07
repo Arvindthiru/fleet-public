@@ -66,6 +66,9 @@ func NewTestNodes(ns string) []v1.Node {
 type newType struct {
 }
 
+type testType struct {
+}
+
 // NotFoundMatcher matches the error to be not found.
 type NotFoundMatcher struct {
 }
