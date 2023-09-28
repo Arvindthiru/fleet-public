@@ -156,10 +156,10 @@ install-hub-agent-helm:
 .PHONY: e2e-v1alpha1-hub-kubeconfig-secret
 e2e-v1alpha1-hub-kubeconfig-secret:
 	kind export kubeconfig --name $(HUB_KIND_CLUSTER_NAME)
-	TOKEN=$$(kubectl get secret hub-kubeconfig-secret -n fleet-system -o jsonpath='{.data.token}' | base64 -d) ;\
+	TOKEN=$$(kubectl get secret hub-member-kubeconfig-secret -n fleet-member-member-testing -o jsonpath='{.data.token}' | base64 -d) ;\
 	kind export kubeconfig --name $(MEMBER_KIND_CLUSTER_NAME) ;\
-	kubectl delete secret hub-kubeconfig-secret --ignore-not-found ;\
-	kubectl create secret generic hub-kubeconfig-secret --from-literal=token=$$TOKEN
+	kubectl delete secret hub-member-kubeconfig-secret --ignore-not-found ;\
+	kubectl create secret generic hub-member-kubeconfig-secret --from-literal=token=$$TOKEN
 
 install-member-agent-helm: install-hub-agent-helm e2e-v1alpha1-hub-kubeconfig-secret
 	kind export kubeconfig --name $(HUB_KIND_CLUSTER_NAME)

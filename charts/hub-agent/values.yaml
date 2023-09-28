@@ -19,6 +19,9 @@ webhookClientConnectionType: service
 namespace:
   fleet-system
 
+memberAgentNamespace:
+  fleet-member-member-testing
+
 resources:
   limits:
     cpu: 500m
@@ -33,6 +36,9 @@ affinity: {}
 
 secret:
   name: hub-kubeconfig-secret
+
+memberAgentSecret:
+  name: hub-member-kubeconfig-secret
 
 enableV1Alpha1APIs: true
 enableV1Beta1APIs: false

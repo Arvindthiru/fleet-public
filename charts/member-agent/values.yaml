@@ -37,7 +37,7 @@ config:
   CABundle: "ca-bundle-path"
 
 secret:
-  name: "hub-kubeconfig-secret"
+  name: "hub-member-kubeconfig-secret"
   namespace: "default"
 
 azure:
