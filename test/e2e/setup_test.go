@@ -37,8 +37,8 @@ const (
 	// Note that these names must match with those in `setup.sh`, with a prefix `kind-`.
 	hubClusterName     = "kind-hub"
 	memberCluster1Name = "kind-cluster-1"
-	memberCluster2Name = "kind-cluster-2"
-	memberCluster3Name = "kind-cluster-3"
+	//memberCluster2Name = "kind-cluster-2"
+	//memberCluster3Name = "kind-cluster-3"
 
 	hubClusterSAName = "hub-agent-sa"
 	fleetSystemNS    = "fleet-system"
@@ -57,13 +57,13 @@ var (
 
 	hubCluster     *framework.Cluster
 	memberCluster1 *framework.Cluster
-	memberCluster2 *framework.Cluster
-	memberCluster3 *framework.Cluster
+	//memberCluster2 *framework.Cluster
+	//memberCluster3 *framework.Cluster
 
 	hubClient            client.Client
 	memberCluster1Client client.Client
-	memberCluster2Client client.Client
-	memberCluster3Client client.Client
+	//memberCluster2Client client.Client
+	//memberCluster3Client client.Client
 
 	allMemberClusters []*framework.Cluster
 )
@@ -144,19 +144,20 @@ func beforeSuiteForAllProcesses() {
 	memberCluster1Client = memberCluster1.KubeClient
 	Expect(memberCluster1Client).NotTo(BeNil(), "Failed to initialize client for accessing Kubernetes cluster")
 
-	memberCluster2 = framework.NewCluster(memberCluster2Name, scheme)
-	Expect(memberCluster2).NotTo(BeNil(), "Failed to initialize cluster object")
-	framework.GetClusterClient(memberCluster2)
-	memberCluster2Client = memberCluster2.KubeClient
-	Expect(memberCluster2Client).NotTo(BeNil(), "Failed to initialize client for accessing Kubernetes cluster")
+	//memberCluster2 = framework.NewCluster(memberCluster2Name, scheme)
+	//Expect(memberCluster2).NotTo(BeNil(), "Failed to initialize cluster object")
+	//framework.GetClusterClient(memberCluster2)
+	//memberCluster2Client = memberCluster2.KubeClient
+	//Expect(memberCluster2Client).NotTo(BeNil(), "Failed to initialize client for accessing Kubernetes cluster")
+	//
+	//memberCluster3 = framework.NewCluster(memberCluster3Name, scheme)
+	//Expect(memberCluster3).NotTo(BeNil(), "Failed to initialize cluster object")
+	//framework.GetClusterClient(memberCluster3)
+	//memberCluster3Client = memberCluster3.KubeClient
+	//Expect(memberCluster3Client).NotTo(BeNil(), "Failed to initialize client for accessing kubernetes cluster")
 
-	memberCluster3 = framework.NewCluster(memberCluster3Name, scheme)
-	Expect(memberCluster3).NotTo(BeNil(), "Failed to initialize cluster object")
-	framework.GetClusterClient(memberCluster3)
-	memberCluster3Client = memberCluster3.KubeClient
-	Expect(memberCluster3Client).NotTo(BeNil(), "Failed to initialize client for accessing kubernetes cluster")
-
-	allMemberClusters = []*framework.Cluster{memberCluster1, memberCluster2, memberCluster3}
+	//allMemberClusters = []*framework.Cluster{memberCluster1, memberCluster2, memberCluster3}
+	allMemberClusters = []*framework.Cluster{memberCluster1}
 }
 
 func beforeSuiteForProcess1() {

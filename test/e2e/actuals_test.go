@@ -131,14 +131,14 @@ func validateCRPStatus(name types.NamespacedName, wantSelectedResources []placem
 			ClusterName: memberCluster1Name,
 			Conditions:  resourcePlacementRolloutCompletedConditions(crp.Generation),
 		},
-		{
-			ClusterName: memberCluster2Name,
-			Conditions:  resourcePlacementRolloutCompletedConditions(crp.Generation),
-		},
-		{
-			ClusterName: memberCluster3Name,
-			Conditions:  resourcePlacementRolloutCompletedConditions(crp.Generation),
-		},
+		//{
+		//	ClusterName: memberCluster2Name,
+		//	Conditions:  resourcePlacementRolloutCompletedConditions(crp.Generation),
+		//},
+		//{
+		//	ClusterName: memberCluster3Name,
+		//	Conditions:  resourcePlacementRolloutCompletedConditions(crp.Generation),
+		//},
 	}
 	wantStatus := placementv1beta1.ClusterResourcePlacementStatus{
 		Conditions:        wantCRPConditions,

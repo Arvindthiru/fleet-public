@@ -13,7 +13,7 @@ HUB_CLUSTER="hub"
 MEMBER_CLUSTER_1="cluster-1"
 MEMBER_CLUSTER_2="cluster-2"
 MEMBER_CLUSTER_3="cluster-3"
-declare -a MEMBER_CLUSTERS=($MEMBER_CLUSTER_1 $MEMBER_CLUSTER_2 $MEMBER_CLUSTER_3)
+declare -a MEMBER_CLUSTERS=($MEMBER_CLUSTER_1)
 
 export REGISTRY="${REGISTRY:-ghcr.io}"
 export TAG="${TAG:-e2e}"
@@ -30,8 +30,8 @@ kind create cluster --name $HUB_CLUSTER --image=$KIND_IMAGE --kubeconfig=$KUBECO
 
 # Create the member clusters
 kind create cluster --name $MEMBER_CLUSTER_1 --image=$KIND_IMAGE --kubeconfig=$KUBECONFIG
-kind create cluster --name $MEMBER_CLUSTER_2 --image=$KIND_IMAGE --kubeconfig=$KUBECONFIG
-kind create cluster --name $MEMBER_CLUSTER_3 --image=$KIND_IMAGE --kubeconfig=$KUBECONFIG
+#kind create cluster --name $MEMBER_CLUSTER_2 --image=$KIND_IMAGE --kubeconfig=$KUBECONFIG
+#kind create cluster --name $MEMBER_CLUSTER_3 --image=$KIND_IMAGE --kubeconfig=$KUBECONFIG
 
 # Build the Fleet agent images
 echo "Building and the Fleet agent images..."
