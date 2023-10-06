@@ -46,9 +46,8 @@ func ValidateClusterResourcePlacementAlpha(clusterResourcePlacement *fleetv1alph
 				Version: selector.Version,
 				Kind:    selector.Kind,
 			}
-			// TODO: Ensure gvk created from resource selector is valid.
-			if !ResourceInformer.IsClusterScopedResources(gvk) {
-				allErr = append(allErr, fmt.Errorf("the resource is not found in schema (please retry) or it is not a cluster scoped resource: %v", gvk))
+			if err := validateGVK(gvk); err != nil {
+				allErr = append(allErr, err)
 			}
 		}
 	}
@@ -69,6 +68,11 @@ func ValidateClusterResourcePlacementAlpha(clusterResourcePlacement *fleetv1alph
 func ValidateClusterResourcePlacement(clusterResourcePlacement *placementv1beta1.ClusterResourcePlacement) error {
 	allErr := make([]error, 0)
 
+	// we leverage the informer manager to do the resource scope validation
+	if ResourceInformer == nil {
+		allErr = append(allErr, fmt.Errorf("cannot perform resource scope check for now, please retry"))
+	}
+
 	if len(clusterResourcePlacement.Name) > validation.DNS1035LabelMaxLength {
 		allErr = append(allErr, fmt.Errorf("the name field cannot have length exceeding %d", validation.DNS1035LabelMaxLength))
 	}
@@ -81,6 +85,14 @@ func ValidateClusterResourcePlacement(clusterResourcePlacement *placementv1beta1
 			if _, err := metav1.LabelSelectorAsSelector(selector.LabelSelector); err != nil {
 				allErr = append(allErr, fmt.Errorf("the labelSelector in resource selector %+v is invalid: %w", selector, err))
 			}
+		}
+		gvk := schema.GroupVersionKind{
+			Group:   selector.Group,
+			Version: selector.Version,
+			Kind:    selector.Kind,
+		}
+		if err := validateGVK(gvk); err != nil {
+			allErr = append(allErr, err)
 		}
 	}
 
@@ -134,4 +146,17 @@ func validateRolloutStrategy(rolloutStrategy placementv1beta1.RolloutStrategy) e
 	}
 
 	return apiErrors.NewAggregate(allErr)
+}
+
+func validateGVK(gvk schema.GroupVersionKind) error {
+	if ResourceInformer != nil {
+		isClusterScoped, err := ResourceInformer.IsClusterScopedResources(gvk)
+		if err != nil {
+			return err
+		}
+		if !isClusterScoped {
+			return fmt.Errorf("the resources is not a cluster scoped resource: %+v", gvk)
+		}
+	}
+	return nil
 }

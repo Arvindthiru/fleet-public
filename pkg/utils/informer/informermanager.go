@@ -50,7 +50,7 @@ type Manager interface {
 	GetNameSpaceScopedResources() []schema.GroupVersionResource
 
 	// IsClusterScopedResources returns if a resource is cluster scoped.
-	IsClusterScopedResources(resource schema.GroupVersionKind) bool
+	IsClusterScopedResources(resource schema.GroupVersionKind) (bool, error)
 
 	// WaitForCacheSync waits for the informer cache to populate.
 	WaitForCacheSync()
@@ -202,15 +202,15 @@ func (s *informerManagerImpl) GetNameSpaceScopedResources() []schema.GroupVersio
 	return res
 }
 
-func (s *informerManagerImpl) IsClusterScopedResources(gvk schema.GroupVersionKind) bool {
+func (s *informerManagerImpl) IsClusterScopedResources(gvk schema.GroupVersionKind) (bool, error) {
 	s.resourcesLock.RLock()
 	defer s.resourcesLock.RUnlock()
 
 	resMeta, exist := s.apiResources[gvk]
 	if !exist {
-		return false
+		return false, fmt.Errorf("gvk is not recognized, the resource is not found in schema: %+v", gvk)
 	}
-	return resMeta.IsClusterScoped
+	return resMeta.IsClusterScoped, nil
 }
 
 func (s *informerManagerImpl) Stop() {

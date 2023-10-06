@@ -34,8 +34,8 @@ func (m MockResourceInformer) GetNameSpaceScopedResources() []schema.GroupVersio
 	return []schema.GroupVersionResource{}
 }
 
-func (m MockResourceInformer) IsClusterScopedResources(resource schema.GroupVersionKind) bool {
-	return resource.Kind != "Role"
+func (m MockResourceInformer) IsClusterScopedResources(gvk schema.GroupVersionKind) (bool, error) {
+	return gvk.Kind != "Role", nil
 }
 
 func (m MockResourceInformer) WaitForCacheSync() {}
