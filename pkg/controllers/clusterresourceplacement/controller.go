@@ -406,6 +406,10 @@ func (r *Reconciler) deleteRedundantResourceSnapshots(ctx context.Context, crp *
 
 // TODO handle all the resources selected by placement larger than 1MB size limit of k8s objects.
 func (r *Reconciler) getOrCreateClusterResourceSnapshot(ctx context.Context, crp *fleetv1beta1.ClusterResourcePlacement, envelopeObjCount int, resourceSnapshotSpec *fleetv1beta1.ResourceSnapshotSpec, revisionHistoryLimit int) (*fleetv1beta1.ClusterResourceSnapshot, error) {
+	for i, _ := range resourceSnapshotSpec.SelectedResources {
+		klog.V(2).InfoS("selected resource size", "resourceSize", len(resourceSnapshotSpec.SelectedResources[i].Raw))
+	}
+
 	resourceHash, err := generateResourceHash(resourceSnapshotSpec)
 	crpKObj := klog.KObj(crp)
 	if err != nil {

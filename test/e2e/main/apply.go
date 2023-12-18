@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	v1 "k8s.io/api/core/v1"
 	"log"
@@ -58,7 +59,6 @@ func main() {
 	}
 	hubCluster.KubeClient, err = client.New(restConfig, client.Options{Scheme: hubCluster.Scheme})
 	hubClient = hubCluster.KubeClient
-	fmt.Println("here")
 	var largeSecret v1.Secret
 	utils.GetObjectFromManifest("./test/integration/manifests/resources/test-large-secret.yaml", &largeSecret)
 	fmt.Println(largeSecret.Name)
@@ -67,4 +67,21 @@ func main() {
 		fmt.Println(err)
 		os.Exit(0)
 	}
+	size, err := getObjectSize(largeSecret)
+	if err != nil {
+		fmt.Println("failed to get object size")
+	}
+	fmt.Println("object size is:", size)
+}
+
+func getObjectSize(obj interface{}) (int, error) {
+	// Marshal the object to JSON
+	data, err := json.Marshal(obj)
+	if err != nil {
+		return 0, err
+	}
+
+	// Calculate the size in bytes
+	size := len(data)
+	return size, nil
 }
