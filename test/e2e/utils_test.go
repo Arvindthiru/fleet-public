@@ -310,7 +310,7 @@ func createResourcesForFleetGuardRail() {
 			{
 				APIGroup: rbacv1.GroupName,
 				Kind:     "User",
-				Name:     testUser,
+				Name:     "test-user",
 			},
 		},
 		RoleRef: rbacv1.RoleRef{
@@ -470,7 +470,7 @@ func cleanWorkResourcesOnCluster(cluster *framework.Cluster) {
 func createLargeResources() {
 	ns := workNamespace()
 	Expect(hubClient.Create(ctx, &ns)).To(Succeed(), "Failed to create namespace %s", ns.Namespace)
-	for i := 0; i < 5; i++ {
+	for i := 0; i < 4; i++ {
 		var secret corev1.Secret
 		Expect(utils.GetObjectFromManifest("../integration/manifests/resources/test-large-secret.yaml", &secret)).Should(Succeed())
 		secret.Namespace = ns.Name

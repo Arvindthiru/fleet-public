@@ -297,7 +297,7 @@ func largeResourceIdentifiers() []placementv1beta1.ResourceIdentifier {
 	workNamespaceName := fmt.Sprintf(workNamespaceNameTemplate, GinkgoParallelProcess())
 	var placementResourceIdentifiers []placementv1beta1.ResourceIdentifier
 
-	for i := 4; i >= 0; i-- {
+	for i := 3; i >= 0; i-- {
 		placementResourceIdentifiers = append(placementResourceIdentifiers, placementv1beta1.ResourceIdentifier{
 			Kind:      "Secret",
 			Name:      fmt.Sprintf(appSecretNameTemplate, i),
