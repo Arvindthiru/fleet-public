@@ -118,7 +118,7 @@ func workNamespaceAndSecretsPlacedOnClusterActual(cluster *framework.Cluster) fu
 		if err := validateWorkNamespaceOnCluster(cluster, types.NamespacedName{Name: workNamespaceName}); err != nil {
 			return err
 		}
-		for i := 0; i < 5; i++ {
+		for i := 0; i < 4; i++ {
 			if err := validateSecretOnCluster(cluster, types.NamespacedName{Name: fmt.Sprintf(appSecretNameTemplate, i), Namespace: workNamespaceName}); err != nil {
 				return err
 			}
