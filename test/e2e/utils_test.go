@@ -467,6 +467,18 @@ func cleanWorkResourcesOnCluster(cluster *framework.Cluster) {
 	Eventually(workResourcesRemovedActual, eventuallyDuration, eventuallyInterval).Should(Succeed(), "Failed to remove work resources from %s cluster", cluster.ClusterName)
 }
 
+func createLargeResources() {
+	ns := workNamespace()
+	Expect(hubClient.Create(ctx, &ns)).To(Succeed(), "Failed to create namespace %s", ns.Namespace)
+	for i := 0; i < 5; i++ {
+		var secret corev1.Secret
+		Expect(utils.GetObjectFromManifest("../integration/manifests/resources/test-large-secret.yaml", &secret)).Should(Succeed())
+		secret.Namespace = ns.Name
+		secret.Name = fmt.Sprintf(appSecretNameTemplate, i)
+		Expect(hubClient.Create(ctx, &secret)).To(Succeed(), "Failed to create secret %s/%s", secret.Name, secret.Namespace)
+	}
+}
+
 // setAllMemberClustersToLeave sets all member clusters to leave the fleet.
 func setAllMemberClustersToLeave() {
 	for idx := range allMemberClusters {
@@ -511,6 +523,15 @@ func checkIfPlacedNamespaceResourceOnAllMemberClusters() {
 
 		namespaceResourcePlacedActual := workNamespacePlacedOnClusterActual(memberCluster)
 		Eventually(namespaceResourcePlacedActual, eventuallyDuration, eventuallyInterval).Should(Succeed(), "Failed to place work namespace on member cluster %s", memberCluster.ClusterName)
+	}
+}
+
+func checkIfPlacedLargeWorkResourcesOnAllMemberCluster() {
+	for idx := range allMemberClusters {
+		memberCluster := allMemberClusters[idx]
+
+		largeResourcePlacedActual := workNamespaceAndSecretsPlacedOnClusterActual(memberCluster)
+		Eventually(largeResourcePlacedActual(), eventuallyDuration, eventuallyInterval).Should(Succeed(), "Failed to place large work resources on member cluster %s", memberCluster.ClusterName)
 	}
 }
 

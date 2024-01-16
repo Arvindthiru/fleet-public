@@ -17,6 +17,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/utils/pointer"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	placementv1beta1 "go.goms.io/fleet/apis/placement/v1beta1"
 	"go.goms.io/fleet/pkg/controllers/clusterresourceplacement"
@@ -1209,6 +1210,76 @@ var _ = Describe("validating CRP revision history allowing multiple revisions wh
 	It("should have one policy snapshot revision and two resource snapshot revisions", func() {
 		Expect(validateCRPSnapshotRevisions(crpName, 1, 2)).Should(Succeed(), "Failed to validate the revision history")
 	})
+
+	It("can delete the CRP", func() {
+		// Delete the CRP.
+		crp := &placementv1beta1.ClusterResourcePlacement{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: crpName,
+			},
+		}
+		Expect(hubClient.Delete(ctx, crp)).To(Succeed(), "Failed to delete CRP %s", crpName)
+	})
+
+	It("should remove placed resources from all member clusters", checkIfRemovedWorkResourcesFromAllMemberClusters)
+
+	It("should remove controller finalizers from CRP", func() {
+		finalizerRemovedActual := allFinalizersExceptForCustomDeletionBlockerRemovedFromCRPActual()
+		Eventually(finalizerRemovedActual, eventuallyDuration, eventuallyInterval).Should(Succeed(), "Failed to remove controller finalizers from CRP %s", crpName)
+	})
+})
+
+var _ = Describe("validating CRP when selected resources cross the 1MB limit", Ordered, func() {
+	crpName := fmt.Sprintf(crpNameTemplate, GinkgoParallelProcess())
+
+	BeforeAll(func() {
+		By("creating large resources")
+		createLargeResources()
+
+		// Create the CRP.
+		crp := &placementv1beta1.ClusterResourcePlacement{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: crpName,
+				// Add a custom finalizer; this would allow us to better observe
+				// the behavior of the controllers.
+				Finalizers: []string{customDeletionBlockerFinalizer},
+			},
+			Spec: placementv1beta1.ClusterResourcePlacementSpec{
+				ResourceSelectors: []placementv1beta1.ClusterResourceSelector{
+					{
+						Group:   "",
+						Kind:    "Namespace",
+						Version: "v1",
+						Name:    fmt.Sprintf(workNamespaceNameTemplate, GinkgoParallelProcess()),
+					},
+				},
+			},
+		}
+		By(fmt.Sprintf("creating placement %s", crpName))
+		Expect(hubClient.Create(ctx, crp)).To(Succeed(), "Failed to create CRP %s", crpName)
+	})
+
+	AfterAll(func() {
+		By(fmt.Sprintf("deleting placement %s", crpName))
+		cleanupCRP(crpName)
+
+		By("deleting created work resources")
+		cleanupWorkResources()
+	})
+
+	It("should update CRP status as expected", func() {
+		crpStatusUpdatedActual := crpStatusUpdatedActual(largeResourceIdentifiers(), allMemberClusterNames, nil, "0")
+		Eventually(crpStatusUpdatedActual, eventuallyDuration, eventuallyInterval).Should(Succeed(), "Failed to update CRP %s status as expected", crpName)
+	})
+
+	It("check create cluster resource snapshots as expected", func() {
+		matchingLabels := client.MatchingLabels{placementv1beta1.CRPTrackingLabel: crpName}
+		resourceSnapshotList := &placementv1beta1.ClusterResourceSnapshotList{}
+		Expect(hubClient.List(ctx, resourceSnapshotList, matchingLabels)).Should(Succeed())
+		Expect(len(resourceSnapshotList.Items)).Should(Equal(2))
+	})
+
+	It("should place the selected resources on member clusters", checkIfPlacedLargeWorkResourcesOnAllMemberCluster)
 
 	It("can delete the CRP", func() {
 		// Delete the CRP.
