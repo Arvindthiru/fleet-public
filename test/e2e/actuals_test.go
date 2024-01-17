@@ -435,7 +435,7 @@ func multipleResourceSnapshotsCreatedActual(numberOfResourceSnapshotsAnnotation,
 			return fmt.Errorf("NumberOfResourceSnapshotsAnnotation in master cluster resource snapshot has unexpected value:  got %s, want %s", numberOfResourceSnapshots, numberOfResourceSnapshotsAnnotation)
 		}
 		if strconv.Itoa(len(resourceSnapshotList.Items)) != numberOfResourceSnapshots {
-			return fmt.Errorf("number of cluster resource snapshots has unexpected value:  got %s, want %s", strconv.Itoa(len(resourceSnapshotList.Items)), numberOfResourceSnapshots)
+			return fmt.Errorf("number of cluster resource snapshots has unexpected value: got %s, want %s", strconv.Itoa(len(resourceSnapshotList.Items)), numberOfResourceSnapshots)
 		}
 		masterResourceIndex := masterResourceSnapshot.Labels[placementv1beta1.ResourceIndexLabel]
 		if masterResourceIndex != resourceIndexLabel {
