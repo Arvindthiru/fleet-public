@@ -423,7 +423,7 @@ func multipleResourceSnapshotsCreatedActual(numberOfResourceSnapshotsAnnotation,
 		}
 		// there should be only one master resource snapshot.
 		if len(resourceSnapshotList.Items) != 1 {
-			return fmt.Errorf("number of master cluster resource snapshots has unexpected value: want %d, got %d", 1, len(resourceSnapshotList.Items))
+			return fmt.Errorf("number of master cluster resource snapshots has unexpected value: got %d, want %d", len(resourceSnapshotList.Items), 1)
 		}
 		masterResourceSnapshot := resourceSnapshotList.Items[0]
 		resourceSnapshotListLabels := client.MatchingLabels{placementv1beta1.CRPTrackingLabel: crpName}
@@ -432,20 +432,20 @@ func multipleResourceSnapshotsCreatedActual(numberOfResourceSnapshotsAnnotation,
 		}
 		numberOfResourceSnapshots := masterResourceSnapshot.Annotations[placementv1beta1.NumberOfResourceSnapshotsAnnotation]
 		if numberOfResourceSnapshots != numberOfResourceSnapshotsAnnotation {
-			return fmt.Errorf("NumberOfResourceSnapshotsAnnotation in master cluster resource snapshot has unexpected value: want %s, got %s", "2", numberOfResourceSnapshots)
+			return fmt.Errorf("NumberOfResourceSnapshotsAnnotation in master cluster resource snapshot has unexpected value:  got %s, want %s", numberOfResourceSnapshots, numberOfResourceSnapshotsAnnotation)
 		}
 		if strconv.Itoa(len(resourceSnapshotList.Items)) != numberOfResourceSnapshots {
 			return fmt.Errorf("number of cluster resource snapshots has unexpected value: want %s, got %s", numberOfResourceSnapshots, strconv.Itoa(len(resourceSnapshotList.Items)))
 		}
 		masterResourceIndex := masterResourceSnapshot.Labels[placementv1beta1.ResourceIndexLabel]
 		if masterResourceIndex != resourceIndexLabel {
-			return fmt.Errorf("resource index for master cluster resource snapshot %s has unexpected value: want %s, got %s", masterResourceSnapshot.Name, "0", masterResourceIndex)
+			return fmt.Errorf("resource index for master cluster resource snapshot %s has unexpected value: got %s, want %s", masterResourceSnapshot.Name, masterResourceIndex, resourceIndexLabel)
 		}
 		for i := range resourceSnapshotList.Items {
 			resourceSnapshot := resourceSnapshotList.Items[i]
 			index := resourceSnapshot.Labels[placementv1beta1.ResourceIndexLabel]
 			if index != masterResourceIndex {
-				return fmt.Errorf("resource index for cluster resource snapshot %s has unexpected value: want %s, got %s", resourceSnapshot.Name, masterResourceIndex, index)
+				return fmt.Errorf("resource index for cluster resource snapshot %s has unexpected value: got %s, want %s", resourceSnapshot.Name, index, masterResourceIndex)
 			}
 		}
 		return nil
