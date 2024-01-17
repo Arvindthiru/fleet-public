@@ -7,6 +7,7 @@ package e2e
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/google/go-cmp/cmp"
 	. "github.com/onsi/ginkgo/v2"
@@ -404,6 +405,49 @@ func crpRemovedActual() func() error {
 			return fmt.Errorf("CRP still exists or an unexpected error occurred: %w", err)
 		}
 
+		return nil
+	}
+}
+
+func multipleResourceSnapshotsCreatedActual(numberOfResourceSnapshotsAnnotation, resourceIndexLabel string) func() error {
+	crpName := fmt.Sprintf(crpNameTemplate, GinkgoParallelProcess())
+
+	return func() error {
+		var resourceSnapshotList placementv1beta1.ClusterResourceSnapshotList
+		masterResourceSnapshotLabels := client.MatchingLabels{
+			placementv1beta1.IsLatestSnapshotLabel: strconv.FormatBool(true),
+			placementv1beta1.CRPTrackingLabel:      crpName,
+		}
+		if err := hubClient.List(ctx, &resourceSnapshotList, masterResourceSnapshotLabels); err != nil {
+			return err
+		}
+		// there should be only one master resource snapshot.
+		if len(resourceSnapshotList.Items) != 1 {
+			return fmt.Errorf("number of master cluster resource snapshots has unexpected value: want %d, got %d", 1, len(resourceSnapshotList.Items))
+		}
+		masterResourceSnapshot := resourceSnapshotList.Items[0]
+		resourceSnapshotListLabels := client.MatchingLabels{placementv1beta1.CRPTrackingLabel: crpName}
+		if err := hubClient.List(ctx, &resourceSnapshotList, resourceSnapshotListLabels); err != nil {
+			return err
+		}
+		numberOfResourceSnapshots := masterResourceSnapshot.Annotations[placementv1beta1.NumberOfResourceSnapshotsAnnotation]
+		if numberOfResourceSnapshots != numberOfResourceSnapshotsAnnotation {
+			return fmt.Errorf("NumberOfResourceSnapshotsAnnotation in master cluster resource snapshot has unexpected value: want %s, got %s", "2", numberOfResourceSnapshots)
+		}
+		if strconv.Itoa(len(resourceSnapshotList.Items)) != numberOfResourceSnapshots {
+			return fmt.Errorf("number of cluster resource snapshots has unexpected value: want %s, got %s", numberOfResourceSnapshots, strconv.Itoa(len(resourceSnapshotList.Items)))
+		}
+		masterResourceIndex := masterResourceSnapshot.Labels[placementv1beta1.ResourceIndexLabel]
+		if masterResourceIndex != resourceIndexLabel {
+			return fmt.Errorf("resource index for master cluster resource snapshot %s has unexpected value: want %s, got %s", masterResourceSnapshot.Name, "0", masterResourceIndex)
+		}
+		for i := range resourceSnapshotList.Items {
+			resourceSnapshot := resourceSnapshotList.Items[i]
+			index := resourceSnapshot.Labels[placementv1beta1.ResourceIndexLabel]
+			if index != masterResourceIndex {
+				return fmt.Errorf("resource index for cluster resource snapshot %s has unexpected value: want %s, got %s", resourceSnapshot.Name, masterResourceIndex, index)
+			}
+		}
 		return nil
 	}
 }

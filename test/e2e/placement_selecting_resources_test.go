@@ -17,7 +17,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/utils/pointer"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	placementv1beta1 "go.goms.io/fleet/apis/placement/v1beta1"
 	"go.goms.io/fleet/pkg/controllers/clusterresourceplacement"
@@ -1268,17 +1267,7 @@ var _ = Describe("validating CRP when selected resources cross the 1MB limit", O
 	})
 
 	It("check if created cluster resource snapshots are as expected", func() {
-		Eventually(func(g Gomega) error {
-			matchingLabels := client.MatchingLabels{placementv1beta1.CRPTrackingLabel: crpName}
-			resourceSnapshotList := &placementv1beta1.ClusterResourceSnapshotList{}
-			g.Expect(hubClient.List(ctx, resourceSnapshotList, matchingLabels)).Should(Succeed())
-			g.Expect(len(resourceSnapshotList.Items)).Should(Equal(2))
-			for i := range resourceSnapshotList.Items {
-				resourceSnapshot := resourceSnapshotList.Items[i]
-				g.Expect(resourceSnapshot.Labels[placementv1beta1.ResourceIndexLabel]).Should(Equal("0"))
-			}
-			return nil
-		}, eventuallyDuration, eventuallyInterval).Should(Succeed(), "Failed to check created cluster resource snapshots", crpName)
+		Eventually(multipleResourceSnapshotsCreatedActual("2", "0"), eventuallyDuration, eventuallyInterval).Should(Succeed(), "Failed to check created cluster resource snapshots", crpName)
 	})
 
 	It("should update CRP status as expected", func() {
