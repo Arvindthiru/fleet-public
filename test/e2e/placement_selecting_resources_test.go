@@ -1267,16 +1267,23 @@ var _ = Describe("validating CRP when selected resources cross the 1MB limit", O
 		cleanupWorkResources()
 	})
 
+	It("check if created cluster resource snapshots are as expected", func() {
+		Eventually(func(g Gomega) error {
+			matchingLabels := client.MatchingLabels{placementv1beta1.CRPTrackingLabel: crpName}
+			resourceSnapshotList := &placementv1beta1.ClusterResourceSnapshotList{}
+			g.Expect(hubClient.List(ctx, resourceSnapshotList, matchingLabels)).Should(Succeed())
+			g.Expect(len(resourceSnapshotList.Items)).Should(Equal(2))
+			for i := range resourceSnapshotList.Items {
+				resourceSnapshot := resourceSnapshotList.Items[i]
+				g.Expect(resourceSnapshot.Labels[placementv1beta1.ResourceIndexLabel]).Should(Equal("0"))
+			}
+			return nil
+		}, eventuallyDuration, eventuallyInterval).Should(Succeed(), "Failed to check created cluster resource snapshots", crpName)
+	})
+
 	It("should update CRP status as expected", func() {
 		crpStatusUpdatedActual := crpStatusUpdatedActual(largeResourceIdentifiers(), allMemberClusterNames, nil, "0")
 		Eventually(crpStatusUpdatedActual, eventuallyDuration, eventuallyInterval).Should(Succeed(), "Failed to update CRP %s status as expected", crpName)
-	})
-
-	It("check create cluster resource snapshots as expected", func() {
-		matchingLabels := client.MatchingLabels{placementv1beta1.CRPTrackingLabel: crpName}
-		resourceSnapshotList := &placementv1beta1.ClusterResourceSnapshotList{}
-		Expect(hubClient.List(ctx, resourceSnapshotList, matchingLabels)).Should(Succeed())
-		Expect(len(resourceSnapshotList.Items)).Should(Equal(2))
 	})
 
 	It("should place the selected resources on member clusters", checkIfPlacedLargeWorkResourcesOnAllMemberCluster)
