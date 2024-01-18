@@ -14,6 +14,7 @@ import (
 	"github.com/google/go-cmp/cmp/cmpopts"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	admv1 "k8s.io/api/admissionregistration/v1"
 	appsv1 "k8s.io/api/apps/v1"
 	corev1 "k8s.io/api/core/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
@@ -467,16 +468,26 @@ func cleanWorkResourcesOnCluster(cluster *framework.Cluster) {
 	Eventually(workResourcesRemovedActual, eventuallyDuration, eventuallyInterval).Should(Succeed(), "Failed to remove work resources from %s cluster", cluster.ClusterName)
 }
 
-func createLargeResources() {
-	ns := workNamespace()
-	Expect(hubClient.Create(ctx, &ns)).To(Succeed(), "Failed to create namespace %s", ns.Namespace)
+func resourcesForMultipleResourceSnapshots() {
+	createWorkResources()
+
 	for i := 0; i < 4; i++ {
 		var secret corev1.Secret
 		Expect(utils.GetObjectFromManifest("../integration/manifests/resources/test-large-secret.yaml", &secret)).Should(Succeed())
-		secret.Namespace = ns.Name
+		secret.Namespace = workNamespace().Name
 		secret.Name = fmt.Sprintf(appSecretNameTemplate, i)
 		Expect(hubClient.Create(ctx, &secret)).To(Succeed(), "Failed to create secret %s/%s", secret.Name, secret.Namespace)
 	}
+
+	d := appDeployment()
+	Expect(hubClient.Create(ctx, &d)).To(Succeed(), "Failed to create deployment %s", d.Name)
+}
+
+func ensureFleetValidatingWebhookConfigurationExists() {
+	Eventually(func() error {
+		var webhookConfig admv1.ValidatingWebhookConfiguration
+		return hubClient.Get(ctx, types.NamespacedName{Name: "fleet-validating-webhook-configuration"}, &webhookConfig)
+	}, eventuallyDuration, eventuallyInterval).Should(Succeed(), "Failed to ensure fleet validating webhook configuration for pods, replica sets exists")
 }
 
 // setAllMemberClustersToLeave sets all member clusters to leave the fleet.
@@ -526,12 +537,21 @@ func checkIfPlacedNamespaceResourceOnAllMemberClusters() {
 	}
 }
 
-func checkIfPlacedLargeWorkResourcesOnAllMemberCluster() {
+func checkIfPlacedLargeSecretResourcesOnAllMemberCluster() {
 	for idx := range allMemberClusters {
 		memberCluster := allMemberClusters[idx]
 
-		largeResourcePlacedActual := workNamespaceAndSecretsPlacedOnClusterActual(memberCluster)
-		Eventually(largeResourcePlacedActual(), eventuallyDuration, eventuallyInterval).Should(Succeed(), "Failed to place large work resources on member cluster %s", memberCluster.ClusterName)
+		secretsPlacedActual := secretsPlacedOnClusterActual(memberCluster)
+		Eventually(secretsPlacedActual(), eventuallyDuration, eventuallyInterval).Should(Succeed(), "Failed to place large secrets on member cluster %s", memberCluster.ClusterName)
+	}
+}
+
+func checkIfPlacedDeploymentResourceOnAllMemberCluster() {
+	for idx := range allMemberClusters {
+		memberCluster := allMemberClusters[idx]
+
+		deploymentPlacedActual := deploymentPlacedOnClusterActual(memberCluster)
+		Eventually(deploymentPlacedActual(), eventuallyDuration, eventuallyInterval).Should(Succeed(), "Failed to place deployment on member cluster %s", memberCluster.ClusterName)
 	}
 }
 
@@ -599,6 +619,13 @@ func ensureCRPAndRelatedResourcesDeletion(crpName string, memberClusters []*fram
 
 	// Delete the created resources.
 	cleanupWorkResources()
+}
+
+func ensureCRPDoesNotExist(crpName string) {
+	Eventually(func() bool {
+		var crp placementv1beta1.ClusterResourcePlacement
+		return apierrors.IsNotFound(hubClient.Get(ctx, types.NamespacedName{Name: crpName}, &crp))
+	}, eventuallyDuration, eventuallyInterval).Should(BeTrue())
 }
 
 // verifyWorkPropagationAndMarkAsApplied verifies that works derived from a specific CPR have been created

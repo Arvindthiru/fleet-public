@@ -7,6 +7,7 @@ package e2e
 
 import (
 	"fmt"
+	appsv1 "k8s.io/api/apps/v1"
 	"strconv"
 	"time"
 
@@ -24,6 +25,7 @@ const (
 	workNamespaceNameTemplate         = "application-%d"
 	appConfigMapNameTemplate          = "app-config-%d"
 	appSecretNameTemplate             = "app-secret-%d" // #nosec G101
+	appDeploymentNameTemplate         = "app-deployment-%d"
 	crpNameTemplate                   = "crp-%d"
 	mcNameTemplate                    = "mc-%d"
 	internalServiceExportNameTemplate = "ise-%d"
@@ -78,6 +80,49 @@ func appConfigMap() corev1.ConfigMap {
 		},
 		Data: map[string]string{
 			"data": "test",
+		},
+	}
+}
+
+func appDeployment() appsv1.Deployment {
+	return appsv1.Deployment{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: "v1",
+			Kind:       "Deployment",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      fmt.Sprintf(appDeploymentNameTemplate, GinkgoParallelProcess()),
+			Namespace: fmt.Sprintf(workNamespaceNameTemplate, GinkgoParallelProcess()),
+			Labels: map[string]string{
+				"data": "test",
+			},
+		},
+		Spec: appsv1.DeploymentSpec{
+			Selector: &metav1.LabelSelector{
+				MatchLabels: map[string]string{
+					"data": "test",
+				},
+			},
+			Template: corev1.PodTemplateSpec{
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						"data": "test",
+					},
+				},
+				Spec: corev1.PodSpec{
+					Containers: []corev1.Container{
+						{
+							Name:  "nginx",
+							Image: "nginx:1.14.2",
+							Ports: []corev1.ContainerPort{
+								{
+									ContainerPort: 80,
+								},
+							},
+						},
+					},
+				},
+			},
 		},
 	}
 }
