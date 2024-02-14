@@ -1,0 +1,17 @@
+apiVersion: placement.kubernetes-fleet.io/v1alpha1
+kind: ClusterResourceOverrideSnapshot
+metadata:
+  name: test-cluster-resource-override-snapshot
+spec:
+  overrideSpec:
+    clusterResourceSelectors:
+      - group: rbac.authorization.k8s.io
+        version: v1
+        kind: ClusterRole
+    policy:
+      overrideRules:
+        - jsonPatchOverrides:
+            - operator: Add
+              path: test-path
+              value: test-value
+  overrideHash: dGVzdA==

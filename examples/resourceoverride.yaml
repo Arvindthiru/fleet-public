@@ -1,0 +1,16 @@
+apiVersion: placement.kubernetes-fleet.io/v1alpha1
+kind: ResourceOverride
+metadata:
+  name: test-resource-override
+spec:
+  resourceSelectors:
+    - group: rbac.authorization.k8s.io
+      version: v1
+      kind: Role
+      name: test-role
+  policy:
+    overrideRules:
+      - jsonPatchOverrides:
+          - operator: Add
+            path: test-path
+            value: test-value
