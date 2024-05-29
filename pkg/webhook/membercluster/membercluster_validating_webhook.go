@@ -17,7 +17,7 @@ import (
 )
 
 var (
-	// ValidationPath is the webhook service path which admission requests are routed to for validating ReplicaSet resources.
+	// ValidationPath is the webhook service path which admission requests are routed to for validating MemberCluster resources.
 	ValidationPath = fmt.Sprintf(utils.ValidationPathFmt, clusterv1beta1.GroupVersion.Group, clusterv1beta1.GroupVersion.Version, "membercluster")
 )
 

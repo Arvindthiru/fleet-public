@@ -15,6 +15,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"go.goms.io/fleet/pkg/webhook/controllerrevision"
 	"math/big"
 	"os"
 	"path/filepath"
@@ -101,6 +102,7 @@ const (
 	podResourceName                      = "pods"
 	clusterResourceOverrideName          = "clusterresourceoverrides"
 	resourceOverrideName                 = "resourceoverrides"
+	controllerRevisionName               = "controllerrevisions"
 )
 
 var (
@@ -342,6 +344,22 @@ func (w *Config) buildFleetValidatingWebhooks() []admv1.ValidatingWebhook {
 						admv1.Update,
 					},
 					Rule: createRule([]string{placementv1alpha1.GroupVersion.Group}, []string{placementv1alpha1.GroupVersion.Version}, []string{resourceOverrideName}, &namespacedScope),
+				},
+			},
+			TimeoutSeconds: longWebhookTimeout,
+		},
+		{
+			Name:                    "fleet.controllerrevision.validating",
+			ClientConfig:            w.createClientConfig(controllerrevision.ValidationPath),
+			FailurePolicy:           &failFailurePolicy,
+			SideEffects:             &sideEffortsNone,
+			AdmissionReviewVersions: admissionReviewVersions,
+			Rules: []admv1.RuleWithOperations{
+				{
+					Operations: []admv1.OperationType{
+						admv1.Create,
+					},
+					Rule: createRule([]string{appsv1.SchemeGroupVersion.Group}, []string{appsv1.SchemeGroupVersion.Version}, []string{controllerRevisionName}, &namespacedScope),
 				},
 			},
 			TimeoutSeconds: longWebhookTimeout,
