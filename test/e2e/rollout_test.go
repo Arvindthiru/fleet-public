@@ -542,70 +542,12 @@ var _ = Describe("placing wrapped resources using a CRP", Ordered, func() {
 	})
 })
 
-func readDeploymentTestManifest(testDeployment *appv1.Deployment) {
-	By("Read the deployment resource")
-	err := utils.GetObjectFromManifest("resources/test-deployment.yaml", testDeployment)
-	Expect(err).Should(Succeed())
-}
-
-func readDaemonSetTestManifest(testDaemonSet *appv1.DaemonSet) {
-	By("Read the daemonSet resource")
-	err := utils.GetObjectFromManifest("resources/test-daemonset.yaml", testDaemonSet)
-	Expect(err).Should(Succeed())
-}
-
-func readStatefulSetTestManifest(testStatefulSet *appv1.StatefulSet, withVolume bool) {
-	By("Read the statefulSet resource")
-	if withVolume {
-		Expect(utils.GetObjectFromManifest("resources/statefulset-with-volume.yaml", testStatefulSet)).Should(Succeed())
-	} else {
-		Expect(utils.GetObjectFromManifest("resources/test-statefulset.yaml", testStatefulSet)).Should(Succeed())
-	}
-}
-
-func readServiceTestManifest(testService *corev1.Service) {
-	By("Read the service resource")
-	err := utils.GetObjectFromManifest("resources/test-service.yaml", testService)
-	Expect(err).Should(Succeed())
-}
-
-func readJobTestManifest(testManifest *batchv1.Job) {
-	By("Read the job resource")
-	err := utils.GetObjectFromManifest("resources/test-job.yaml", testManifest)
-	Expect(err).Should(Succeed())
-}
-
-func readEnvelopeConfigMapTestManifest(testEnvelopeObj *corev1.ConfigMap) {
-	By("Read testEnvelopConfigMap resource")
-	err := utils.GetObjectFromManifest("resources/test-envelope-object.yaml", testEnvelopeObj)
-	Expect(err).Should(Succeed())
-}
-
 // createWrappedResourcesForRollout creates an enveloped resource on the hub cluster with a workload object for testing purposes.
 func createWrappedResourcesForRollout(testEnvelopeObj *corev1.ConfigMap, obj metav1.Object, kind string, namespace corev1.Namespace) {
 	Expect(hubClient.Create(ctx, &namespace)).To(Succeed(), "Failed to create namespace %s", namespace.Name)
 	testEnvelopeObj.Data = make(map[string]string)
 	constructWrappedResources(testEnvelopeObj, obj, kind, namespace)
 	Expect(hubClient.Create(ctx, testEnvelopeObj)).To(Succeed(), "Failed to create testEnvelop object %s containing %s", testEnvelopeObj.Name, kind)
-}
-
-// constructWrappedResources fill the enveloped resource with the workload object
-func constructWrappedResources(testEnvelopeObj *corev1.ConfigMap, workloadObj metav1.Object, kind string, namespace corev1.Namespace) {
-	// modify the enveloped configMap according to the namespace
-	testEnvelopeObj.Namespace = namespace.Name
-
-	// modify the embedded namespaced resource according to the namespace
-	workloadObj.SetNamespace(namespace.Name)
-	workloadObjectByte, err := json.Marshal(workloadObj)
-	Expect(err).Should(Succeed())
-	switch kind {
-	case utils.DeploymentKind:
-		testEnvelopeObj.Data["deployment.yaml"] = string(workloadObjectByte)
-	case utils.DaemonSetKind:
-		testEnvelopeObj.Data["daemonset.yaml"] = string(workloadObjectByte)
-	case utils.StatefulSetKind:
-		testEnvelopeObj.Data["statefulset.yaml"] = string(workloadObjectByte)
-	}
 }
 
 func waitForDeploymentPlacementToReady(memberCluster *framework.Cluster, testDeployment *appv1.Deployment) func() error {
