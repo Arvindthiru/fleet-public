@@ -20,6 +20,7 @@ import (
 	"go.uber.org/atomic"
 	"golang.org/x/sync/errgroup"
 	corev1 "k8s.io/api/core/v1"
+	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -906,4 +907,35 @@ func (r *Reconciler) SetupWithManager(mgr controllerruntime.Manager) error {
 			},
 		}).
 		Complete(r)
+}
+
+func isFailedResourcePlacementsEqual(oldFailedResourcePlacements, newFailedResourcePlacements []fleetv1beta1.FailedResourcePlacement) bool {
+	if len(oldFailedResourcePlacements) != len(newFailedResourcePlacements) {
+		return false
+	}
+	sort.Slice(oldFailedResourcePlacements, func(i, j int) bool {
+		return condition.LessFuncFailedResourcePlacements(oldFailedResourcePlacements[i], oldFailedResourcePlacements[j])
+	})
+	sort.Slice(newFailedResourcePlacements, func(i, j int) bool {
+		return condition.LessFuncFailedResourcePlacements(newFailedResourcePlacements[i], newFailedResourcePlacements[j])
+	})
+	for i, _ := range oldFailedResourcePlacements {
+		oldFailedResourcePlacement := oldFailedResourcePlacements[i]
+		newFailedResourcePlacement := newFailedResourcePlacements[i]
+		if !apiequality.Semantic.DeepEqual(oldFailedResourcePlacement.ResourceIdentifier, newFailedResourcePlacement.ResourceIdentifier) {
+			return false
+		}
+		if !isConditionsEqual(oldFailedResourcePlacement.Condition, newFailedResourcePlacement.Condition) {
+			return false
+		}
+	}
+	return true
+}
+
+func isConditionsEqual(oldCondition, newCondition metav1.Condition) bool {
+	oldCondition.LastTransitionTime = metav1.Time{}
+	newCondition.LastTransitionTime = metav1.Time{}
+	oldCondition.Message = ""
+	newCondition.Message = ""
+	return apiequality.Semantic.DeepEqual(oldCondition, newCondition)
 }

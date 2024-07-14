@@ -1484,3 +1484,68 @@ func TestExtractFailedResourcePlacementsFromWork(t *testing.T) {
 		})
 	}
 }
+
+func TestIsFailedResourcePlacementsEqual(t *testing.T) {
+	time1 := metav1.NewTime(time.Now())
+	time2 := metav1.NewTime(time1.Add(-1 * time.Hour))
+	tests := []struct {
+		name string
+		old  []fleetv1beta1.FailedResourcePlacement
+		new  []fleetv1beta1.FailedResourcePlacement
+		want bool
+	}{
+		{
+			name: "compare two failed resource placement",
+			old: []fleetv1beta1.FailedResourcePlacement{
+				{
+					ResourceIdentifier: fleetv1beta1.ResourceIdentifier{
+						Group:     "core",
+						Version:   "v1",
+						Kind:      "Pod",
+						Name:      "pod2",
+						Namespace: "default",
+						Envelope:  nil,
+					},
+					Condition: metav1.Condition{
+						Type:               condition.ApplyFailedReason,
+						Status:             metav1.ConditionTrue,
+						ObservedGeneration: 0,
+						LastTransitionTime: time1,
+						Reason:             work.ManifestApplyFailedReason,
+						Message:            "message1",
+					},
+				},
+			},
+			new: []fleetv1beta1.FailedResourcePlacement{
+				{
+					ResourceIdentifier: fleetv1beta1.ResourceIdentifier{
+						Group:     "core",
+						Version:   "v1",
+						Kind:      "Pod",
+						Name:      "pod2",
+						Namespace: "default",
+						Envelope:  nil,
+					},
+					Condition: metav1.Condition{
+						Type:               condition.ApplyFailedReason,
+						Status:             metav1.ConditionTrue,
+						ObservedGeneration: 0,
+						LastTransitionTime: time2,
+						Reason:             work.ManifestApplyFailedReason,
+						Message:            "message2",
+					},
+				},
+			},
+			want: true,
+		},
+	}
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			got := isFailedResourcePlacementsEqual(tc.old, tc.new)
+			if diff := cmp.Diff(tc.want, got); diff != "" {
+				t.Errorf("isFailedResourcePlacementsEqual() status mismatch (-want, +got):\n%s", diff)
+			}
+		})
+	}
+
+}
