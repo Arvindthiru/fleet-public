@@ -111,7 +111,19 @@ var LessFuncResourceIdentifier = func(a, b fleetv1beta1.ResourceIdentifier) bool
 
 // LessFuncFailedResourcePlacements is a less function for sorting failed resource placements
 var LessFuncFailedResourcePlacements = func(a, b fleetv1beta1.FailedResourcePlacement) bool {
-	return LessFuncResourceIdentifier(a.ResourceIdentifier, b.ResourceIdentifier)
+	var aStr, bStr string
+	if a.Envelope != nil {
+		aStr = fmt.Sprintf(utils.ResourceIdentifierWithEnvelopeIdentifierStringFormat, a.Group, a.Version, a.Kind, a.Namespace, a.Name, a.Envelope.Type, a.Envelope.Namespace, a.Envelope.Name)
+	} else {
+		aStr = fmt.Sprintf(utils.ResourceIdentifierStringFormat, a.Group, a.Version, a.Kind, a.Namespace, a.Name)
+	}
+	if b.Envelope != nil {
+		bStr = fmt.Sprintf(utils.ResourceIdentifierWithEnvelopeIdentifierStringFormat, b.Group, b.Version, b.Kind, b.Namespace, b.Name, b.Envelope.Type, b.Envelope.Namespace, b.Envelope.Name)
+	} else {
+		bStr = fmt.Sprintf(utils.ResourceIdentifierStringFormat, b.Group, b.Version, b.Kind, b.Namespace, b.Name)
+
+	}
+	return aStr < bStr
 }
 
 // EqualCondition compares one condition with another; it ignores the LastTransitionTime and Message fields,

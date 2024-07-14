@@ -84,6 +84,9 @@ const (
 
 	// ResourceIdentifierStringFormat is the format of the resource identifier string.
 	ResourceIdentifierStringFormat = "%s/%s/%s/%s/%s"
+
+	// ResourceIdentifierWithEnvelopeIdentifierStringFormat is the format of the resource identifier string with envelope identifier.
+	ResourceIdentifierWithEnvelopeIdentifierStringFormat = "%s/%s/%s/%s/%s/%s/%s/%s"
 )
 
 var (
