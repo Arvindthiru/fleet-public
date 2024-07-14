@@ -916,7 +916,7 @@ func isFailedResourcePlacementsEqual(oldFailedResourcePlacements, newFailedResou
 	sort.Slice(newFailedResourcePlacements, func(i, j int) bool {
 		return condition.LessFuncFailedResourcePlacements(newFailedResourcePlacements[i], newFailedResourcePlacements[j])
 	})
-	for i, _ := range oldFailedResourcePlacements {
+	for i := range oldFailedResourcePlacements {
 		oldFailedResourcePlacement := oldFailedResourcePlacements[i]
 		newFailedResourcePlacement := newFailedResourcePlacements[i]
 		if !apiequality.Semantic.DeepEqual(oldFailedResourcePlacement.ResourceIdentifier, newFailedResourcePlacement.ResourceIdentifier) {
