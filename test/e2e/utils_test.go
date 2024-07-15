@@ -38,6 +38,7 @@ import (
 	"go.goms.io/fleet/pkg/utils"
 	"go.goms.io/fleet/pkg/utils/condition"
 	"go.goms.io/fleet/test/e2e/framework"
+	testutils "go.goms.io/fleet/test/utils"
 )
 
 var (
@@ -209,7 +210,7 @@ func checkIfAllMemberClustersHaveJoined() {
 				wantAgentStatus,
 				cmpopts.SortSlices(lessFuncCondition),
 				ignoreConditionObservedGenerationField,
-				condition.IgnoreConditionLTTAndMessageFields,
+				testutils.IgnoreConditionLTTAndMessageFields,
 				ignoreAgentStatusHeartbeatField,
 			); diff != "" {
 				return fmt.Errorf("agent status diff (-got, +want): %s", diff)
@@ -269,7 +270,7 @@ func checkIfAzurePropertyProviderIsWorking() {
 			if diff := cmp.Diff(
 				mcObj.Status.Conditions, wantStatus.Conditions,
 				ignoreMemberClusterJoinAndPropertyProviderStartedConditions,
-				condition.IgnoreConditionLTTAndMessageFields, ignoreConditionReasonField,
+				testutils.IgnoreConditionLTTAndMessageFields, ignoreConditionReasonField,
 				ignoreTimeTypeFields,
 			); diff != "" {
 				return fmt.Errorf("member cluster status conditions diff (-got, +want):\n%s", diff)

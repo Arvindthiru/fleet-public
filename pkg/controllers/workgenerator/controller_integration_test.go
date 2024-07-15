@@ -29,6 +29,7 @@ import (
 	placementv1beta1 "go.goms.io/fleet/apis/placement/v1beta1"
 	"go.goms.io/fleet/pkg/utils"
 	"go.goms.io/fleet/pkg/utils/condition"
+	testutils "go.goms.io/fleet/test/utils"
 )
 
 var (
@@ -47,7 +48,7 @@ var (
 	validResourceOverrideSnapshot          placementv1alpha1.ResourceOverrideSnapshot
 	invalidClusterResourceOverrideSnapshot placementv1alpha1.ClusterResourceOverrideSnapshot
 
-	cmpConditionOption = cmp.Options{cmpopts.SortSlices(condition.LessFuncFailedResourcePlacements), condition.IgnoreConditionLTTAndMessageFields, cmpopts.EquateEmpty()}
+	cmpConditionOption = cmp.Options{cmpopts.SortSlices(condition.LessFuncFailedResourcePlacements), testutils.IgnoreConditionLTTAndMessageFields, cmpopts.EquateEmpty()}
 
 	fakeFailedAppliedReason  = "fakeApplyFailureReason"
 	fakeFailedAppliedMessage = "fake apply failure message"

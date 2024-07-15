@@ -32,8 +32,8 @@ import (
 	"go.goms.io/fleet/pkg/controllers/clusterresourceplacement"
 	workv1alpha1controller "go.goms.io/fleet/pkg/controllers/workv1alpha1"
 	"go.goms.io/fleet/pkg/utils"
-	"go.goms.io/fleet/pkg/utils/condition"
 	testv1alpha1 "go.goms.io/fleet/test/apis/v1alpha1"
+	testutils "go.goms.io/fleet/test/utils"
 )
 
 const ClusterRoleKind = "ClusterRole"
@@ -1107,7 +1107,7 @@ var _ = Describe("Test Cluster Resource Placement Controller", func() {
 			}
 
 			crpStatusCmpOptions := []cmp.Option{
-				condition.IgnoreConditionLTTAndMessageFields,
+				testutils.IgnoreConditionLTTAndMessageFields,
 				cmpopts.SortSlices(func(ref1, ref2 metav1.Condition) bool { return ref1.Type < ref2.Type }),
 			}
 
@@ -1597,7 +1597,7 @@ var _ = Describe("Test Cluster Resource Placement Controller", func() {
 			}
 
 			crpStatusCmpOptions := []cmp.Option{
-				condition.IgnoreConditionLTTAndMessageFields,
+				testutils.IgnoreConditionLTTAndMessageFields,
 				cmpopts.SortSlices(func(ref1, ref2 metav1.Condition) bool { return ref1.Type < ref2.Type }),
 				cmpopts.SortSlices(func(ref1, ref2 string) bool { return ref1 < ref2 }),
 			}
@@ -1760,7 +1760,7 @@ var _ = Describe("Test Cluster Resource Placement Controller", func() {
 			}
 
 			crpStatusCmpOptions := []cmp.Option{
-				condition.IgnoreConditionLTTAndMessageFields,
+				testutils.IgnoreConditionLTTAndMessageFields,
 				cmpopts.SortSlices(func(ref1, ref2 metav1.Condition) bool { return ref1.Type < ref2.Type }),
 				cmpopts.SortSlices(func(ref1, ref2 string) bool { return ref1 < ref2 }),
 			}

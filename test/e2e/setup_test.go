@@ -36,6 +36,7 @@ import (
 	"go.goms.io/fleet/pkg/propertyprovider/azure/trackers"
 	"go.goms.io/fleet/pkg/utils/condition"
 	"go.goms.io/fleet/test/e2e/framework"
+	testutils "go.goms.io/fleet/test/utils"
 )
 
 const (
@@ -175,9 +176,9 @@ var (
 	crpStatusCmpOptions = cmp.Options{
 		cmpopts.SortSlices(lessFuncCondition),
 		cmpopts.SortSlices(lessFuncPlacementStatus),
-		cmpopts.SortSlices(condition.LessFuncResourceIdentifier),
+		cmpopts.SortSlices(testutils.LessFuncResourceIdentifier),
 		cmpopts.SortSlices(condition.LessFuncFailedResourcePlacements),
-		condition.IgnoreConditionLTTAndMessageFields,
+		testutils.IgnoreConditionLTTAndMessageFields,
 		cmpopts.EquateEmpty(),
 	}
 
@@ -186,9 +187,9 @@ var (
 	safeRolloutCRPStatusCmpOptions = cmp.Options{
 		cmpopts.SortSlices(lessFuncCondition),
 		cmpopts.SortSlices(lessFuncPlacementStatusByConditions),
-		cmpopts.SortSlices(condition.LessFuncResourceIdentifier),
+		cmpopts.SortSlices(testutils.LessFuncResourceIdentifier),
 		cmpopts.SortSlices(condition.LessFuncFailedResourcePlacements),
-		condition.IgnoreConditionLTTAndMessageFields,
+		testutils.IgnoreConditionLTTAndMessageFields,
 		ignoreClusterNameField,
 		cmpopts.EquateEmpty(),
 	}
