@@ -502,6 +502,10 @@ var _ = Describe("placing wrapped resources using a CRP", Ordered, func() {
 
 		It("create the CRP that select the namespace", func() {
 			crp := buildCRPForSafeRollout()
+			// the job we are trying to propagate takes 10s to complete. MaxUnavailable is set to 1. So setting UnavailablePeriodSeconds to 15s
+			// so that after each rollout phase we only wait for 15s before proceeding to the next since Job is not trackable,
+			// we want rollout to finish in a reasonable time.
+			crp.Spec.Strategy.RollingUpdate.UnavailablePeriodSeconds = ptr.To(15)
 			Expect(hubClient.Create(ctx, crp)).To(Succeed(), "Failed to create CRP")
 		})
 
