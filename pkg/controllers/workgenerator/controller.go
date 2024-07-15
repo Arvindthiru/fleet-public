@@ -922,17 +922,9 @@ func isFailedResourcePlacementsEqual(oldFailedResourcePlacements, newFailedResou
 		if !apiequality.Semantic.DeepEqual(oldFailedResourcePlacement.ResourceIdentifier, newFailedResourcePlacement.ResourceIdentifier) {
 			return false
 		}
-		if !isConditionsEqual(oldFailedResourcePlacement.Condition, newFailedResourcePlacement.Condition) {
+		if !condition.EqualCondition(&oldFailedResourcePlacement.Condition, &newFailedResourcePlacement.Condition) {
 			return false
 		}
 	}
 	return true
-}
-
-func isConditionsEqual(oldCondition, newCondition metav1.Condition) bool {
-	oldCondition.LastTransitionTime = metav1.Time{}
-	newCondition.LastTransitionTime = metav1.Time{}
-	oldCondition.Message = ""
-	newCondition.Message = ""
-	return apiequality.Semantic.DeepEqual(oldCondition, newCondition)
 }
