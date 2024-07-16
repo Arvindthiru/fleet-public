@@ -114,7 +114,7 @@ func areConditionsUpdated(oldBinding, newBinding *fleetv1beta1.ClusterResourceBi
 		oldCond := oldBinding.GetCondition(string(i.ResourceBindingConditionType()))
 		newCond := newBinding.GetCondition(string(i.ResourceBindingConditionType()))
 		// oldCond.ObservedGeneration will always be less than or equal to newCond.ObservedGeneration.
-		if !condition.EqualCondition(oldCond, newCond) {
+		if !condition.EqualCondition(newCond, oldCond) {
 			return true
 		}
 	}

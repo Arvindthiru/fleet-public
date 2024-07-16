@@ -922,7 +922,7 @@ func isFailedResourcePlacementsEqual(oldFailedResourcePlacements, newFailedResou
 		if !apiequality.Semantic.DeepEqual(oldFailedResourcePlacement.ResourceIdentifier, newFailedResourcePlacement.ResourceIdentifier) {
 			return false
 		}
-		if !condition.EqualCondition(&oldFailedResourcePlacement.Condition, &newFailedResourcePlacement.Condition) {
+		if !condition.EqualCondition(&newFailedResourcePlacement.Condition, &oldFailedResourcePlacement.Condition) {
 			return false
 		}
 	}
