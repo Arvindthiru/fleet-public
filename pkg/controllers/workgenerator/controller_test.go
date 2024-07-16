@@ -1569,7 +1569,7 @@ func TestIsFailedResourcePlacementsEqual(t *testing.T) {
 					Condition: metav1.Condition{
 						Type:               fleetv1beta1.WorkConditionTypeAvailable,
 						Status:             metav1.ConditionFalse,
-						ObservedGeneration: 0,
+						ObservedGeneration: 1,
 						LastTransitionTime: time2,
 						Reason:             "WorkNotAvailableYet",
 						Message:            "message2",
@@ -1591,7 +1591,7 @@ func TestIsFailedResourcePlacementsEqual(t *testing.T) {
 					Condition: metav1.Condition{
 						Type:               fleetv1beta1.WorkConditionTypeApplied,
 						Status:             metav1.ConditionFalse,
-						ObservedGeneration: 0,
+						ObservedGeneration: 1,
 						LastTransitionTime: time2,
 						Reason:             work.ManifestApplyFailedReason,
 						Message:            "message2",
@@ -1665,7 +1665,7 @@ func TestIsFailedResourcePlacementsEqual(t *testing.T) {
 					Condition: metav1.Condition{
 						Type:               fleetv1beta1.WorkConditionTypeApplied,
 						Status:             metav1.ConditionFalse,
-						ObservedGeneration: 0,
+						ObservedGeneration: 1,
 						LastTransitionTime: time2,
 						Reason:             work.ManifestApplyFailedReason,
 						Message:            "message2",
@@ -1687,7 +1687,7 @@ func TestIsFailedResourcePlacementsEqual(t *testing.T) {
 					Condition: metav1.Condition{
 						Type:               fleetv1beta1.WorkConditionTypeApplied,
 						Status:             metav1.ConditionFalse,
-						ObservedGeneration: 0,
+						ObservedGeneration: 1,
 						LastTransitionTime: time2,
 						Reason:             work.ManifestApplyFailedReason,
 						Message:            "message2",
@@ -1753,7 +1753,7 @@ func TestIsFailedResourcePlacementsEqual(t *testing.T) {
 					Condition: metav1.Condition{
 						Type:               fleetv1beta1.WorkConditionTypeAvailable,
 						Status:             metav1.ConditionFalse,
-						ObservedGeneration: 0,
+						ObservedGeneration: 1,
 						LastTransitionTime: time2,
 						Reason:             "WorkNotAvailableYet",
 						Message:            "message2",
@@ -1775,7 +1775,7 @@ func TestIsFailedResourcePlacementsEqual(t *testing.T) {
 					Condition: metav1.Condition{
 						Type:               fleetv1beta1.WorkConditionTypeApplied,
 						Status:             metav1.ConditionFalse,
-						ObservedGeneration: 0,
+						ObservedGeneration: 1,
 						LastTransitionTime: time2,
 						Reason:             work.ManifestApplyFailedReason,
 						Message:            "message2",
@@ -1841,7 +1841,7 @@ func TestIsFailedResourcePlacementsEqual(t *testing.T) {
 					Condition: metav1.Condition{
 						Type:               fleetv1beta1.WorkConditionTypeAvailable,
 						Status:             metav1.ConditionFalse,
-						ObservedGeneration: 0,
+						ObservedGeneration: 1,
 						LastTransitionTime: time2,
 						Reason:             "WorkNotAvailableYet",
 						Message:            "message2",
@@ -1863,7 +1863,7 @@ func TestIsFailedResourcePlacementsEqual(t *testing.T) {
 					Condition: metav1.Condition{
 						Type:               fleetv1beta1.WorkConditionTypeAvailable,
 						Status:             metav1.ConditionFalse,
-						ObservedGeneration: 0,
+						ObservedGeneration: 1,
 						LastTransitionTime: time2,
 						Reason:             "WorkNotAvailableYet",
 						Message:            "message2",
@@ -1933,7 +1933,7 @@ func TestIsFailedResourcePlacementsEqual(t *testing.T) {
 					Condition: metav1.Condition{
 						Type:               fleetv1beta1.WorkConditionTypeApplied,
 						Status:             metav1.ConditionFalse,
-						ObservedGeneration: 0,
+						ObservedGeneration: 1,
 						LastTransitionTime: time2,
 						Reason:             work.ManifestApplyFailedReason,
 						Message:            "message2",
