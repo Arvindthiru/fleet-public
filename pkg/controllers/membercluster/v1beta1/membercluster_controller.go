@@ -158,8 +158,6 @@ func (r *Reconciler) handleDelete(ctx context.Context, mc *clusterv1beta1.Member
 	}
 	// calculate the current status of the member cluster from imc status
 	r.syncInternalMemberClusterStatus(currentImc, mc)
-	// TODO: check the last heartbeat time from all agents and assume the member cluster is left if they haven't sent heartbeat
-	//       beyond a pre-agreed threshold.
 	// check if the cluster is already left
 	mcJoinedCondition := meta.FindStatusCondition(mc.Status.Conditions, string(clusterv1beta1.ConditionTypeMemberClusterJoined))
 	if condition.IsConditionStatusFalse(mcJoinedCondition, mc.GetGeneration()) {
@@ -175,9 +173,26 @@ func (r *Reconciler) handleDelete(ctx context.Context, mc *clusterv1beta1.Member
 		klog.ErrorS(err, "Failed to mark the imc as leave", "memberCluster", mcObjRef)
 		return runtime.Result{}, err
 	}
+	if canGarbageCollect(mc) {
+		klog.V(2).InfoS("Member agents have not sent a heart beat in the last 15 minutes", "memberCluster", mcObjRef)
+		if gcErr := r.garbageCollect(ctx, mc); gcErr != nil {
+			return runtime.Result{}, gcErr
+		}
+		return runtime.Result{Requeue: true}, controller.NewUpdateIgnoreConflictError(r.updateMemberClusterStatus(ctx, mc))
+	}
 	// update the mc status to track the leaving status while we wait for all the agents to leave.
 	// once the imc is updated, the mc controller will reconcile again.
 	return runtime.Result{}, controller.NewUpdateIgnoreConflictError(r.updateMemberClusterStatus(ctx, mc))
+}
+
+func canGarbageCollect(mc *clusterv1beta1.MemberCluster) bool {
+	for i, _ := range mc.Status.AgentStatus {
+		lastReceivedHB := mc.Status.AgentStatus[i].LastReceivedHeartbeat
+		if time.Since(lastReceivedHB.Time) < 15*time.Minute {
+			return false
+		}
+	}
+	return true
 }
 
 func (r *Reconciler) getInternalMemberCluster(ctx context.Context, name string) (*clusterv1beta1.InternalMemberCluster, error) {
