@@ -10,6 +10,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	. "github.com/onsi/ginkgo/v2"
+	placementv1alpha1 "go.goms.io/fleet/apis/placement/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -884,6 +885,16 @@ func crpRemovedActual(crpName string) func() error {
 	return func() error {
 		if err := hubClient.Get(ctx, types.NamespacedName{Name: crpName}, &placementv1beta1.ClusterResourcePlacement{}); !errors.IsNotFound(err) {
 			return fmt.Errorf("CRP still exists or an unexpected error occurred: %w", err)
+		}
+
+		return nil
+	}
+}
+
+func crpEvictionRemovedActual(crpEvictionName string) func() error {
+	return func() error {
+		if err := hubClient.Get(ctx, types.NamespacedName{Name: crpEvictionName}, &placementv1alpha1.ClusterResourcePlacementEviction{}); !errors.IsNotFound(err) {
+			return fmt.Errorf("CRP eviction still exists or an unexpected error occurred: %w", err)
 		}
 
 		return nil
