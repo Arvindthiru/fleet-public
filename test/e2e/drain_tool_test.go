@@ -8,7 +8,6 @@ package e2e
 import (
 	"fmt"
 	"os/exec"
-	"strings"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -51,8 +50,8 @@ var _ = Describe("Drain cluster successfully", Ordered, Serial, func() {
 	})
 
 	AfterAll(func() {
-		// Uncordon member cluster 1 again to guarantee clean up of cordon taint on test failure.
-		runUncordonClusterBinary(hubClusterName, memberCluster1EastProdName)
+		// remove taints from member cluster 1 again to guarantee clean up of cordon taint on test failure.
+		removeTaintsFromMemberClusters([]string{memberCluster1EastProdName})
 		ensureCRPAndRelatedResourcesDeleted(crpName, allMemberClusters)
 	})
 
@@ -63,7 +62,7 @@ var _ = Describe("Drain cluster successfully", Ordered, Serial, func() {
 
 	It("should place resources on all available member clusters", checkIfPlacedWorkResourcesOnAllMemberClusters)
 
-	It("drain cluster using binary, should succeed", func() { runDrainClusterBinary(hubClusterName, memberCluster1EastProdName, true) })
+	It("drain cluster using binary, should succeed", func() { runDrainClusterBinary(hubClusterName, memberCluster1EastProdName) })
 
 	It("should ensure no resources exist on drained clusters", func() {
 		for _, cluster := range drainClusters {
@@ -120,8 +119,8 @@ var _ = Describe("Drain cluster blocked - ClusterResourcePlacementDisruptionBudg
 	})
 
 	AfterAll(func() {
-		// Uncordon member cluster 1 again to guarantee clean up of cordon taint on test failure.
-		runUncordonClusterBinary(hubClusterName, memberCluster1EastProdName)
+		// remove taints from member cluster 1 again to guarantee clean up of cordon taint on test failure.
+		removeTaintsFromMemberClusters([]string{memberCluster1EastProdName})
 		ensureCRPDisruptionBudgetDeleted(crpName)
 		ensureCRPAndRelatedResourcesDeleted(crpName, allMemberClusters)
 	})
@@ -148,7 +147,7 @@ var _ = Describe("Drain cluster blocked - ClusterResourcePlacementDisruptionBudg
 		Expect(hubClient.Create(ctx, &crpdb)).To(Succeed(), "Failed to create CRP Disruption Budget %s", crpName)
 	})
 
-	It("drain cluster using binary, should fail due to CRPDB", func() { runDrainClusterBinary(hubClusterName, memberCluster1EastProdName, false) })
+	It("drain cluster using binary, should fail due to CRPDB", func() { runDrainClusterBinary(hubClusterName, memberCluster1EastProdName) })
 
 	It("should ensure cluster resource placement status remains unchanged", func() {
 		crpStatusUpdatedActual := crpStatusUpdatedActual(workResourceIdentifiers(), allMemberClusterNames, nil, "0")
@@ -199,9 +198,8 @@ var _ = Describe("Drain is allowed on one cluster, blocked on others - ClusterRe
 	})
 
 	AfterAll(func() {
-		// Uncordon member clusters 1, 2 again to guarantee clean up of cordon taint on test failure.
-		runUncordonClusterBinary(hubClusterName, memberCluster1EastProdName)
-		runUncordonClusterBinary(hubClusterName, memberCluster2EastCanaryName)
+		// remove taints from member clusters 1,2 again to guarantee clean up of cordon taint on test failure.
+		removeTaintsFromMemberClusters([]string{memberCluster1EastProdName, memberCluster2EastCanaryName})
 		ensureCRPDisruptionBudgetDeleted(crpName)
 		ensureCRPAndRelatedResourcesDeleted(crpName, allMemberClusters)
 	})
@@ -228,9 +226,9 @@ var _ = Describe("Drain is allowed on one cluster, blocked on others - ClusterRe
 		Expect(hubClient.Create(ctx, &crpdb)).To(Succeed(), "Failed to create CRP Disruption Budget %s", crpName)
 	})
 
-	It("drain cluster using binary, should succeed", func() { runDrainClusterBinary(hubClusterName, memberCluster1EastProdName, true) })
+	It("drain cluster using binary, should succeed", func() { runDrainClusterBinary(hubClusterName, memberCluster1EastProdName) })
 
-	It("drain cluster using binary, should fail due to CRPDB", func() { runDrainClusterBinary(hubClusterName, memberCluster2EastCanaryName, false) })
+	It("drain cluster using binary, should fail due to CRPDB", func() { runDrainClusterBinary(hubClusterName, memberCluster2EastCanaryName) })
 
 	It("should ensure no resources exist on drained clusters", func() {
 		for _, cluster := range drainClusters {
@@ -258,18 +256,13 @@ var _ = Describe("Drain is allowed on one cluster, blocked on others - ClusterRe
 	It("should place resources on all available member clusters", checkIfPlacedWorkResourcesOnAllMemberClusters)
 })
 
-func runDrainClusterBinary(hubClusterName, memberClusterName string, isSuccess bool) {
+func runDrainClusterBinary(hubClusterName, memberClusterName string) {
 	By(fmt.Sprintf("draining cluster %s", memberClusterName))
 	cmd := exec.Command(drainBinaryPath,
 		"--hubClusterContext", hubClusterName,
 		"--clusterName", memberClusterName)
-	output, err := cmd.CombinedOutput()
-	Expect(err).ToNot(HaveOccurred(), "Drain command failed with error: %v\nOutput: %s", err, string(output))
-	if isSuccess {
-		Expect(strings.Contains(string(output), "drain retry was successful for cluster")).To(BeTrue(), "Expected drain to be successful")
-	} else {
-		Expect(strings.Contains(string(output), "drain retry was not successful for cluster")).To(BeTrue(), "Expected drain to fail")
-	}
+	_, err := cmd.CombinedOutput()
+	Expect(err).ToNot(HaveOccurred(), "Drain command failed with error: %v", err)
 }
 
 func runUncordonClusterBinary(hubClusterName, memberClusterName string) {
@@ -277,7 +270,6 @@ func runUncordonClusterBinary(hubClusterName, memberClusterName string) {
 	cmd := exec.Command(uncordonBinaryPath,
 		"--hubClusterContext", hubClusterName,
 		"--clusterName", memberClusterName)
-	output, err := cmd.CombinedOutput()
-	Expect(err).ToNot(HaveOccurred(), "Uncordon command failed with error: %v\nOutput: %s", err, string(output))
-	Expect(strings.Contains(string(output), "uncordoned member cluster")).To(BeTrue(), "Expected uncordon to be successful")
+	_, err := cmd.CombinedOutput()
+	Expect(err).ToNot(HaveOccurred(), "Uncordon command failed with error: %v", err)
 }

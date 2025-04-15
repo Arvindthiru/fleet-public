@@ -10,7 +10,6 @@ import (
 	"flag"
 	"log"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"sync"
 	"testing"
@@ -336,16 +335,6 @@ func beforeSuiteForAllProcesses() {
 		for i := range allMemberClusters {
 			allMemberClusterNames = append(allMemberClusterNames, allMemberClusters[i].ClusterName)
 		}
-
-		// Build drain binary.
-		buildCmd := exec.Command("go", "build", "-o", drainBinaryPath, filepath.Join("../../", "tools", "draincluster"))
-		output, err := buildCmd.CombinedOutput()
-		Expect(err).ToNot(HaveOccurred(), "Failed to drain cluster: %v\nOutput: %s", err, string(output))
-
-		// Build uncordon binary.
-		buildCmd = exec.Command("go", "build", "-o", uncordonBinaryPath, filepath.Join("../../", "tools", "uncordoncluster"))
-		output, err = buildCmd.CombinedOutput()
-		Expect(err).ToNot(HaveOccurred(), "Failed to uncordon cluster: %v\nOutput: %s", err, string(output))
 	})
 }
 
