@@ -155,14 +155,22 @@ func TestInstallCRD(t *testing.T) {
 	}
 
 	tests := []struct {
-		name      string
-		crd       *apiextensionsv1.CustomResourceDefinition
-		wantError bool
+		name              string
+		crd               *apiextensionsv1.CustomResourceDefinition
+		isArcInstallation bool
+		wantError         bool
 	}{
 		{
-			name:      "successful CRD installation",
-			crd:       testCRD,
-			wantError: false,
+			name:              "successful CRD installation",
+			crd:               testCRD,
+			isArcInstallation: false,
+			wantError:         false,
+		},
+		{
+			name:              "successful Arc CRD installation",
+			crd:               testCRD,
+			isArcInstallation: true,
+			wantError:         false,
 		},
 	}
 
@@ -188,6 +196,12 @@ func TestInstallCRD(t *testing.T) {
 			if err != nil {
 				t.Errorf("Failed to get installed CRD: %v", err)
 				return
+			}
+
+			if tt.isArcInstallation {
+				if installedCRD.Labels[ArcKey] != "true" {
+					t.Errorf("Expected CRD label %s to be 'true', got %q", ArcKey, installedCRD.Labels[ArcKey])
+				}
 			}
 
 			if installedCRD.Labels[CRDInstallerLabelKey] != "true" {
